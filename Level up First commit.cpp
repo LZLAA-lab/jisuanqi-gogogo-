@@ -8,7 +8,7 @@ using namespace std;
 int CountNumber(int n)
 {
     int BigNumber=1;
-    for(int i=1;i<=n;i++)
+    for(int i=1;i<=n-1;i++)
     {
         BigNumber*=10;
     }
@@ -86,6 +86,7 @@ double calculate(string s,int begin,int end)
     {
         int BoolNumber2=s[j];
         TemporarySum+=CountNumber(Count)*(BoolNumber2-48);
+        Count--;
     }
     while(a.size()!=1)
     {
