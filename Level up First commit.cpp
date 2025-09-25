@@ -115,6 +115,7 @@ int main()
     cout<<"Please enter your mathematical expression"<<endl;
     cin>>s1;
     double result;
+    result=calculate(s1,0,s1.size()-1);
     cout<<"Here is your result"<<endl;
     cout<<result;
     return 0;
