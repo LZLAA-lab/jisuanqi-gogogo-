@@ -57,23 +57,20 @@ double calculate(string s,int begin,int end)
            {
                 if(!b.empty())
                 {
-                    if(b.top()=='*'||b.top()=='/'||b.top()=='%')
+                    if(b.top()=='*'||b.top()=='/')
                     {
                         double Marker=a.top();
+                        double TemSign;
                         if(b.top()=='*')
                         {
-
+                            TemSign=a.top()*TemporarySum;
                         }
                         else if(b.top()=='/')
                         {
-
-                        }
-                        else if(b.top()=='%')
-                        {
-
+                            TemSign=a.top()/TemporarySum;
                         }
                         a.pop();
-                        a.push(Marker);
+                        a.push(TemSign);
                         TemporarySum=0;
                     }
                     else
@@ -101,11 +98,11 @@ double calculate(string s,int begin,int end)
         b.pop();
         if(sign=='+')
         {
-
+            TemporaryResult=a.top()+SymbolNumber;
         }
         if(sign=='-')
         {
-
+            TemporaryResult=a.top()-SymbolNumber;
         }
         a.push(TemporaryResult);
     }
