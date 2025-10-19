@@ -1,0 +1,222 @@
+/*第一版计算器的制作，目前可完成功能为整数之间基础加减乘除运算且可处理有关括号的优先级问题
+对第二版的期望：完成浮点数的运算，并加入高精度运算加大计算范围和精度*/
+#include<iostream>
+#include<cmath>
+#include<stack>
+#include<algorithm>
+#include<cstring>
+using namespace std;
+#include<iostream>
+#include<cmath>
+using namespace std;
+double add(double a, double b)//基础加法运算
+{
+	double sum = a + b;
+	return sum;
+}
+double sub(double a, double b)//基础减法运算
+{
+	double diff = a - b;
+	return diff;
+}
+double mul(double a, double b)//基础乘法运算
+{
+	double pro = a * b;
+	return pro;
+}
+double chu(double a, double b)//基础除法运算
+{
+	double quo = a / b;
+	return quo;
+}
+double Count(int n);
+double calculate(string s, int start, int end);
+void reset();
+void Check(string s, int begin, int end);
+double result;
+int check = 1;
+
+int main()
+{
+    char instr;
+    string s1;
+    cout << "--Yo, check it out—this is the world’s best calculator!--" << endl;
+    do {
+        reset();
+        cout << "Just type in your math problem.\n :" << endl;
+        do{
+            check = 1;
+            cin >> s1;
+            Check(s1, 0, s1.size() - 1);
+        } while (check == 0);
+        result = calculate(s1, 0, s1.size() - 1);
+        cout << "Here is your result :" << endl;
+        cout << result << endl;
+        cout << "Continue? Type y.endl Wanna quit? Type q." << endl;
+        getchar();
+        instr = getchar();
+    } while (instr == 'y');
+    return 0;
+}
+
+// 计算10的(n-1)次方
+double Count(int n) {
+    int Bignumber = 1;
+    for (int i = 1; i < n; i++) {
+        Bignumber *= 10;
+    }
+    return Bignumber;
+}
+
+double calculate(string s, int start, int end) {
+    double TemporarySum = 0;  // 当前数字的累加和
+    int Number = 0;           // 当前数字的位数
+    stack<double> NumStack;
+    stack<char> OpStack;
+
+    for (int i = start; i <= end; i++) {
+        if (s[i] >= '0' && s[i] <= '9') {  // 解析数字
+            Number++;
+        }
+        else {
+            // 如果之前有未解析的数字，先压入栈
+            if (Number != 0) {
+                int tempCount = Number;
+                for (int j = i - Number; j < i; j++) {
+                    TemporarySum += (s[j] - '0') * Count(tempCount);
+                    tempCount--;
+                }
+                NumStack.push(TemporarySum);
+                TemporarySum = 0;
+                Number = 0;
+            }
+
+            if (s[i] == '(') {  // 处理左括号：递归计算括号内
+                int bracketCount = 1;
+                int MarkTwo = i + 1;
+                while (bracketCount > 0) {
+                    if (s[MarkTwo] == '(') bracketCount++;
+                    else if (s[MarkTwo] == ')') bracketCount--;
+                    MarkTwo++;
+                }
+                MarkTwo--;  // 右括号位置
+                double bracketResult = calculate(s, i + 1, MarkTwo - 1);
+                NumStack.push(bracketResult);
+                i = MarkTwo;  // 跳过整个括号（包括右括号）
+            }
+            else if (s[i] == ')') {  // 右括号：不处理，交给外层处理
+                continue;
+            }
+            else {  // 处理运算符：+ - * /
+                // 弹出栈中优先级更高或相等的运算符计算
+                while (!OpStack.empty() && OpStack.top() != '(') {
+                    char topOp = OpStack.top();
+                    if ((topOp == '*' || topOp == '/') ||
+                        ((topOp == '+' || topOp == '-') && (s[i] == '+' || s[i] == '-'))) {
+                        double b = NumStack.top(); NumStack.pop();
+                        double a = NumStack.top(); NumStack.pop();
+                        double res;
+                        switch (topOp) {
+                        case '+': res = add(a,b); break;
+                        case '-': res = sub(a,b); break;
+                        case '*': res = mul(a,b); break;
+                        case '/': res = chu(a,b); break;
+                        }
+                        NumStack.push(res);
+                        OpStack.pop();
+                    }
+                    else {
+                        break;
+                    }
+                }
+                OpStack.push(s[i]);  // 当前运算符入栈
+            }
+        }
+    }
+
+    // 处理最后一个数字
+    if (Number > 0) {
+        int tempCount = Number;
+        for (int j = end - Number + 1; j <= end; j++) {
+            TemporarySum += (s[j] - '0') * Count(tempCount);
+            tempCount--;
+        }
+        NumStack.push(TemporarySum);
+    }
+
+    // 处理栈中剩余的运算符
+    while (!OpStack.empty()) {
+        char op = OpStack.top(); OpStack.pop();
+        double b = NumStack.top(); NumStack.pop();
+        double a = NumStack.top(); NumStack.pop();
+        double res;
+        switch (op) {
+        case '+': res = add(a,b); break;
+        case '-': res = sub(a,b); break;
+        case '*': res = mul(a,b); break;
+        case '/': res =chu(a,b); break;
+        }
+        NumStack.push(res);
+    }
+
+    return NumStack.top();
+}
+void reset() {
+    result = 0;
+    check = 0;
+    cout << "Reset complete." << endl;
+}
+// 检查括号匹配
+void Check(string s, int begin, int end) {
+    stack<char> opStack;     // 运算符栈
+    //括号对称性
+    for (int i = begin; i <= end; i++) {
+
+        if (s[i] == '(') {
+            opStack.push(i);
+        }
+        if (s[i] == ')') {
+            if (!opStack.empty()) {
+                opStack.pop();
+            }
+            else {
+                check = 0;
+                cout << "There is an error in the way you have written the parentheses in your equation. Please check and re - enter it.\n";
+                return;
+            }
+        }
+    }
+    if (!opStack.empty()) {
+        check = 0;
+        cout << "There is an error in the way you have written the parentheses in your equation.\n Please check and re-enter it.\n";
+        return;
+    }
+    //分母不为零
+    for (int i = begin; i <= end; i++) {
+        if (s[i] == '(') {  // 处理左括号：递归计算括号内
+            int bracketCount = 1;
+            int MarkTwo = i + 1;
+            while (bracketCount > 0) {
+                if (s[MarkTwo] == '(') bracketCount++;
+                else if (s[MarkTwo] == ')') bracketCount--;
+                MarkTwo++;
+            }
+            MarkTwo--;  // 右括号位置
+            double bracketResult = calculate(s, i + 1, MarkTwo - 1);
+            if (bracketResult == 0) {
+                check = 0;
+                cout << "There is a denominator equal to 0 in your calculation.\nPlease re-enter.\n";
+                return;
+            }
+        }
+    }
+    //非法字符
+    for (int i = begin; i <= end; i++) {
+        if (!((int(s[i]) <= 57 && int(s[i]) >= 48) || (int(s[i]) <= 43 && int(s[i]) >= 40) || (int(s[i]) == 45 && int(s[i]) == 47)))
+        {
+            check = 0;
+            cout << "Illegal characters.\nPlease check and re_enter.\n";
+            return;
+        }
+    }
+}
